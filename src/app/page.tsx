@@ -77,6 +77,54 @@ interface AuthUser {
   trialEndDate: string;
 }
 
+// Base de usuários válidos (simulando um banco de dados)
+const VALID_USERS = [
+  {
+    email: 'admin@fn12.com',
+    password: 'admin123',
+    name: 'Administrador FN12',
+    hasPaymentMethod: true,
+    subscriptionStatus: 'active' as const
+  },
+  {
+    email: 'user@fn12.com',
+    password: 'user123',
+    name: 'Usuário Teste',
+    hasPaymentMethod: true,
+    subscriptionStatus: 'active' as const
+  },
+  {
+    email: 'demo@fn12.com',
+    password: 'demo123',
+    name: 'Usuário Demo',
+    hasPaymentMethod: false,
+    subscriptionStatus: 'trial' as const
+  }
+];
+
+// Lista de países com códigos
+const countries = [
+  { code: '+1', name: 'Estados Unidos', flag: '🇺🇸' },
+  { code: '+1', name: 'Canadá', flag: '🇨🇦' },
+  { code: '+55', name: 'Brasil', flag: '🇧🇷' },
+  { code: '+54', name: 'Argentina', flag: '🇦🇷' },
+  { code: '+56', name: 'Chile', flag: '🇨🇱' },
+  { code: '+57', name: 'Colômbia', flag: '🇨🇴' },
+  { code: '+51', name: 'Peru', flag: '🇵🇪' },
+  { code: '+58', name: 'Venezuela', flag: '🇻🇪' },
+  { code: '+593', name: 'Equador', flag: '🇪🇨' },
+  { code: '+598', name: 'Uruguai', flag: '🇺🇾' },
+  { code: '+595', name: 'Paraguai', flag: '🇵🇾' },
+  { code: '+591', name: 'Bolívia', flag: '🇧🇴' },
+  { code: '+34', name: 'Espanha', flag: '🇪🇸' },
+  { code: '+351', name: 'Portugal', flag: '🇵🇹' },
+  { code: '+33', name: 'França', flag: '🇫🇷' },
+  { code: '+49', name: 'Alemanha', flag: '🇩🇪' },
+  { code: '+39', name: 'Itália', flag: '🇮🇹' },
+  { code: '+44', name: 'Reino Unido', flag: '🇬🇧' },
+  { code: '+52', name: 'México', flag: '🇲🇽' },
+];
+
 // Função para calcular a reserva financeira integrada
 const calculateIntegratedFinancialReserve = (transactions: Transaction[], initialReserve: number = 0): number => {
   const totalIncome = transactions
@@ -98,7 +146,7 @@ const calculateIntegratedFinancialReserve = (transactions: Transaction[], initia
   return Math.max(0, totalReserve); // Nunca negativo
 };
 
-// Componente de Login
+// Componente de Login - ATUALIZADO COM VALIDAÇÃO REAL
 const LoginScreen = ({ onLogin, onSwitchToRegister }: { 
   onLogin: (email: string, password: string) => void;
   onSwitchToRegister: () => void;
@@ -107,14 +155,26 @@ const LoginScreen = ({ onLogin, onSwitchToRegister }: {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError('');
     
     // Simular delay de autenticação
     setTimeout(() => {
-      onLogin(email, password);
+      // Validar credenciais contra a base de usuários válidos
+      const validUser = VALID_USERS.find(
+        user => user.email === email && user.password === password
+      );
+
+      if (validUser) {
+        onLogin(email, password);
+      } else {
+        setError('E-mail ou senha incorretos. Tente novamente.');
+      }
+      
       setIsLoading(false);
     }, 1000);
   };
@@ -172,6 +232,13 @@ const LoginScreen = ({ onLogin, onSwitchToRegister }: {
             </div>
           </div>
 
+          {/* Exibir erro de autenticação */}
+          {error && (
+            <div className="bg-red-900/20 border border-red-700/30 rounded-xl p-3">
+              <p className="text-red-400 text-sm text-center">{error}</p>
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={isLoading}
@@ -180,6 +247,22 @@ const LoginScreen = ({ onLogin, onSwitchToRegister }: {
             {isLoading ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
+
+        {/* Credenciais de teste para demonstração */}
+        <div className="mt-6 bg-blue-900/20 border border-blue-700/30 rounded-xl p-4">
+          <h3 className="text-blue-400 font-medium mb-2 text-center">Contas de Teste:</h3>
+          <div className="space-y-2 text-sm">
+            <div className="text-gray-300">
+              <strong>Admin:</strong> admin@fn12.com / admin123
+            </div>
+            <div className="text-gray-300">
+              <strong>Usuário:</strong> user@fn12.com / user123
+            </div>
+            <div className="text-gray-300">
+              <strong>Demo:</strong> demo@fn12.com / demo123
+            </div>
+          </div>
+        </div>
 
         <div className="mt-6 text-center">
           <p className="text-gray-400">
@@ -197,21 +280,35 @@ const LoginScreen = ({ onLogin, onSwitchToRegister }: {
   );
 };
 
-// Componente de Cadastro
+// Componente de Cadastro - ATUALIZADO COM VALIDAÇÃO DE E-MAIL ÚNICO
 const RegisterScreen = ({ onRegister, onSwitchToLogin }: { 
-  onRegister: (name: string, email: string, password: string) => void;
+  onRegister: (name: string, email: string, password: string, phone: string, countryCode: string) => void;
   onSwitchToLogin: () => void;
 }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [countryCode, setCountryCode] = useState('+1');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [passwordError, setPasswordError] = useState('');
+  const [emailError, setEmailError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Resetar erros
+    setPasswordError('');
+    setEmailError('');
+    
+    // Verificar se e-mail já existe
+    const emailExists = VALID_USERS.some(user => user.email === email);
+    if (emailExists) {
+      setEmailError('Este e-mail já está cadastrado. Tente fazer login.');
+      return;
+    }
     
     if (password !== confirmPassword) {
       setPasswordError('As senhas não coincidem');
@@ -223,14 +320,36 @@ const RegisterScreen = ({ onRegister, onSwitchToLogin }: {
       return;
     }
 
-    setPasswordError('');
     setIsLoading(true);
     
     // Simular delay de cadastro
     setTimeout(() => {
-      onRegister(name, email, password);
+      onRegister(name, email, password, phone, countryCode);
       setIsLoading(false);
     }, 1000);
+  };
+
+  const formatPhoneNumber = (value: string) => {
+    // Remove tudo que não é número
+    const numbers = value.replace(/\D/g, '');
+    
+    // Aplica formatação baseada no país selecionado
+    if (countryCode === '+55') { // Brasil
+      if (numbers.length <= 11) {
+        return numbers.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+      }
+    } else if (countryCode === '+1') { // EUA/Canadá
+      if (numbers.length <= 10) {
+        return numbers.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+      }
+    }
+    
+    return numbers;
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setPhone(formatted);
   };
 
   return (
@@ -246,7 +365,7 @@ const RegisterScreen = ({ onRegister, onSwitchToLogin }: {
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Fortaleza Nível 12</h1>
           <p className="text-gray-300">Crie sua conta</p>
-          <p className="text-sm text-yellow-400 mt-2">7 dias gratuitos • Depois US$7.90/mês</p>
+          <p className="text-sm text-yellow-400 mt-2">US$7.90/mês • Cancele quando quiser</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -278,6 +397,45 @@ const RegisterScreen = ({ onRegister, onSwitchToLogin }: {
                 required
               />
             </div>
+            {emailError && (
+              <p className="text-red-400 text-sm mt-1">{emailError}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Número de celular</label>
+            <div className="flex gap-2">
+              {/* Seletor de país */}
+              <div className="relative">
+                <select
+                  value={countryCode}
+                  onChange={(e) => setCountryCode(e.target.value)}
+                  className="w-24 px-3 py-3 bg-white/10 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent appearance-none"
+                >
+                  {countries.map((country) => (
+                    <option key={`${country.code}-${country.name}`} value={country.code} className="bg-gray-800">
+                      {country.flag} {country.code}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              {/* Campo do número */}
+              <div className="relative flex-1">
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={handlePhoneChange}
+                  className="w-full pl-10 pr-4 py-3 bg-white/10 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                  placeholder={countryCode === '+55' ? '(11) 99999-9999' : '(555) 123-4567'}
+                  required
+                />
+              </div>
+            </div>
+            <p className="text-xs text-gray-400 mt-1">
+              Escolha o país onde seu número está registrado
+            </p>
           </div>
 
           <div>
@@ -346,50 +504,100 @@ const RegisterScreen = ({ onRegister, onSwitchToLogin }: {
   );
 };
 
-// Componente de Pagamento
+// Componente de Pagamento - INTEGRADO COM PAYPAL
 const PaymentScreen = ({ user, onPaymentComplete, onSkipTrial }: { 
   user: AuthUser;
   onPaymentComplete: () => void;
   onSkipTrial: () => void;
 }) => {
-  const [cardNumber, setCardNumber] = useState('');
-  const [expiryDate, setExpiryDate] = useState('');
-  const [cvv, setCvv] = useState('');
-  const [cardName, setCardName] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [paypalLoaded, setPaypalLoaded] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  useEffect(() => {
+    // Carregar o SDK do PayPal
+    const script = document.createElement('script');
+    script.src = "https://www.paypal.com/sdk/js?client-id=Ab2FkeDBkVY0W8zpBKEHFpevVIL1QRjcGW_GfC8yios81ERquJkTVgCgLsO1V-lmm47xHTIQgelp5e8m&vault=true&intent=subscription";
+    script.setAttribute('data-sdk-integration-source', 'button-factory');
     
-    // Simular processamento de pagamento
-    setTimeout(() => {
-      onPaymentComplete();
-      setIsLoading(false);
-    }, 2000);
+    script.onload = () => {
+      setPaypalLoaded(true);
+      initializePayPalButton();
+    };
+    
+    document.head.appendChild(script);
+
+    return () => {
+      // Cleanup: remover script quando componente for desmontado
+      const existingScript = document.querySelector('script[src*="paypal.com/sdk"]');
+      if (existingScript) {
+        document.head.removeChild(existingScript);
+      }
+    };
+  }, []);
+
+  const initializePayPalButton = () => {
+    if (window.paypal) {
+      window.paypal.Buttons({
+        style: {
+          shape: 'pill',
+          color: 'gold',
+          layout: 'vertical',
+          label: 'subscribe'
+        },
+        createSubscription: function(data: any, actions: any) {
+          return actions.subscription.create({
+            plan_id: 'P-0TW11735CH346140ENDS53YI'
+          });
+        },
+        onApprove: function(data: any, actions: any) {
+          setIsProcessing(true);
+          
+          // Salvar o ID da assinatura no backend
+          saveSubscriptionId(data.subscriptionID);
+          
+          // Liberar acesso completo
+          setTimeout(() => {
+            setIsProcessing(false);
+            onPaymentComplete();
+          }, 2000);
+        },
+        onError: function(err: any) {
+          console.error('Erro no PayPal:', err);
+          setIsProcessing(false);
+          alert('Erro ao processar pagamento. Tente novamente.');
+        },
+        onCancel: function(data: any) {
+          console.log('Pagamento cancelado:', data);
+          setIsProcessing(false);
+        }
+      }).render('#paypal-button-container-P-0TW11735CH346140ENDS53YI');
+    }
   };
 
-  const formatCardNumber = (value: string) => {
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-    const matches = v.match(/\d{4,16}/g);
-    const match = matches && matches[0] || '';
-    const parts = [];
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4));
-    }
-    if (parts.length) {
-      return parts.join(' ');
-    } else {
-      return v;
-    }
-  };
+  const saveSubscriptionId = async (subscriptionID: string) => {
+    try {
+      // Aqui você salvaria o subscriptionID no seu backend
+      const response = await fetch('/api/subscription', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          subscriptionId: subscriptionID,
+          planId: 'P-0TW11735CH346140ENDS53YI',
+          status: 'active'
+        }),
+      });
 
-  const formatExpiryDate = (value: string) => {
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-    if (v.length >= 2) {
-      return v.substring(0, 2) + '/' + v.substring(2, 4);
+      if (response.ok) {
+        console.log('Assinatura salva com sucesso:', subscriptionID);
+      } else {
+        console.error('Erro ao salvar assinatura');
+      }
+    } catch (error) {
+      console.error('Erro ao salvar assinatura:', error);
     }
-    return v;
   };
 
   return (
@@ -399,81 +607,74 @@ const PaymentScreen = ({ user, onPaymentComplete, onSkipTrial }: {
           <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center">
             <CreditCard className="w-10 h-10 text-black" />
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">Adicionar Cartão</h1>
-          <p className="text-gray-300">Para continuar com seu período gratuito</p>
+          <h1 className="text-2xl font-bold text-white mb-2">Assinar Fortaleza Nível 12</h1>
+          <p className="text-gray-300">Complete sua assinatura para ter acesso total</p>
           <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-xl p-4 mt-4">
             <p className="text-yellow-200 text-sm">
-              <strong>7 dias gratuitos</strong><br />
-              Após o período, cobrança de US$7.90/mês
+              <strong>Plano Mensal</strong><br />
+              US$7.90/mês • Cancele quando quiser
             </p>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Nome no cartão</label>
-            <input
-              type="text"
-              value={cardName}
-              onChange={(e) => setCardName(e.target.value)}
-              className="w-full px-4 py-3 bg-white/10 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-              placeholder="Nome como no cartão"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Número do cartão</label>
-            <input
-              type="text"
-              value={cardNumber}
-              onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-              className="w-full px-4 py-3 bg-white/10 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-              placeholder="1234 5678 9012 3456"
-              maxLength={19}
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Validade</label>
-              <input
-                type="text"
-                value={expiryDate}
-                onChange={(e) => setExpiryDate(formatExpiryDate(e.target.value))}
-                className="w-full px-4 py-3 bg-white/10 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                placeholder="MM/AA"
-                maxLength={5}
-                required
-              />
+        {/* Container do botão PayPal */}
+        <div className="mb-6">
+          <div id="paypal-button-container-P-0TW11735CH346140ENDS53YI"></div>
+          
+          {!paypalLoaded && (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-400"></div>
+              <span className="ml-3 text-gray-300">Carregando PayPal...</span>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">CVV</label>
-              <input
-                type="text"
-                value={cvv}
-                onChange={(e) => setCvv(e.target.value.replace(/[^0-9]/g, '').substring(0, 4))}
-                className="w-full px-4 py-3 bg-white/10 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                placeholder="123"
-                maxLength={4}
-                required
-              />
+          )}
+        </div>
+
+        {/* Indicador de processamento */}
+        {isProcessing && (
+          <div className="bg-green-900/20 border border-green-700/30 rounded-xl p-4 mb-6">
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-400 mr-3"></div>
+              <span className="text-green-300">Processando assinatura...</span>
             </div>
           </div>
+        )}
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-semibold py-3 px-6 rounded-xl hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:transform-none"
-          >
-            {isLoading ? 'Processando...' : 'Iniciar período gratuito'}
-          </button>
-        </form>
+        {/* Benefícios da assinatura */}
+        <div className="bg-gray-800/30 rounded-xl p-4 mb-6">
+          <h3 className="font-semibold text-white mb-3">O que você terá acesso:</h3>
+          <ul className="space-y-2 text-sm text-gray-300">
+            <li className="flex items-center">
+              <CheckCircle className="w-4 h-4 text-green-400 mr-2" />
+              Dashboard completo de finanças
+            </li>
+            <li className="flex items-center">
+              <CheckCircle className="w-4 h-4 text-green-400 mr-2" />
+              Controle de gastos e investimentos
+            </li>
+            <li className="flex items-center">
+              <CheckCircle className="w-4 h-4 text-green-400 mr-2" />
+              Sistema de níveis da Fortaleza
+            </li>
+            <li className="flex items-center">
+              <CheckCircle className="w-4 h-4 text-green-400 mr-2" />
+              Assistente IA financeiro
+            </li>
+            <li className="flex items-center">
+              <CheckCircle className="w-4 h-4 text-green-400 mr-2" />
+              Acesso à mentoria FN12
+            </li>
+            <li className="flex items-center">
+              <CheckCircle className="w-4 h-4 text-green-400 mr-2" />
+              Programa de indicações
+            </li>
+          </ul>
+        </div>
 
-        <div className="mt-6 text-center">
-          <p className="text-xs text-gray-500 mt-2">
-            Você pode adicionar um cartão depois nas configurações
+        {/* Informações de segurança */}
+        <div className="text-center">
+          <p className="text-xs text-gray-500">
+            🔒 Pagamento seguro processado pelo PayPal<br />
+            Cancele sua assinatura a qualquer momento
           </p>
         </div>
       </div>
@@ -524,14 +725,12 @@ const WelcomeScreen = ({ onContinue }: { onContinue: () => void }) => {
             </div>
             
             {/* Logo central */}
-            <div className="relative w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center shadow-2xl">
+            <div className="relative w-24 h-24 mx-auto mb-6 bg-black rounded-full flex items-center justify-center shadow-2xl">
               <img 
                 src="https://k6hrqrxuu8obbfwn.public.blob.vercel-storage.com/temp/afa5b2c1-993f-4a9d-8ad1-00ca5d9bbce1.png" 
                 alt="Logo FN12" 
                 className="w-20 h-20 rounded-full object-cover"
               />
-              {/* Brilho dourado */}
-              <div className="absolute inset-0 bg-gradient-to-br from-yellow-300/30 to-transparent rounded-full"></div>
             </div>
           </div>
 
@@ -1626,7 +1825,7 @@ const ReferralTab = ({ user }: { user: User }) => {
   const shareUrl = `https://fortalezanivel12.com/cadastro?ref=${referralCode}`;
 
   const handleShareWhatsApp = () => {
-    const message = `🏰 Descubra a Fortaleza Nível 12! \\n\\nTransforme sua vida financeira com o app que já mudou a vida de milhares de pessoas.\\n\\n✨ Use meu código de indicação: ${referralCode}\\n🎁 Ganhe 1 MÊS GRÁTIS na assinatura!\\n\\nCadastre-se agora: ${shareUrl}\\n\\n#FortalezaNivel12 #LiberdadeFinanceira`;
+    const message = `🏰 Descubra a Fortaleza Nível 12! \\\\n\\\\nTransforme sua vida financeira com o app que já mudou a vida de milhares de pessoas.\\\\n\\\\n✨ Use meu código de indicação: ${referralCode}\\\\n🎁 Ganhe 1 MÊS GRÁTIS na assinatura!\\\\n\\\\nCadastre-se agora: ${shareUrl}\\\\n\\\\n#FortalezaNivel12 #LiberdadeFinanceira`;
     
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
@@ -1634,7 +1833,7 @@ const ReferralTab = ({ user }: { user: User }) => {
 
   const handleShareEmail = () => {
     const subject = 'Ganhe 1 mês grátis na Fortaleza Nível 12!';
-    const body = `Olá!\\n\\nQuero compartilhar com você uma oportunidade incrível de transformar sua vida financeira.\\n\\nA Fortaleza Nível 12 é o app que está revolucionando a forma como as pessoas gerenciam suas finanças e constroem riqueza.\\n\\n🎁 OFERTA ESPECIAL: Use meu código de indicação \\"${referralCode}\\" e ganhe 1 MÊS GRÁTIS!\\n\\nCadastre-se agora: ${shareUrl}\\n\\nNão perca essa chance de começar sua jornada rumo à liberdade financeira!\\n\\nAbraços,\\n${user.name}`;
+    const body = `Olá!\\\\n\\\\nQuero compartilhar com você uma oportunidade incrível de transformar sua vida financeira.\\\\n\\\\nA Fortaleza Nível 12 é o app que está revolucionando a forma como as pessoas gerenciam suas finanças e constroem riqueza.\\\\n\\\\n🎁 OFERTA ESPECIAL: Use meu código de indicação \\\\\"${referralCode}\\\\\" e ganhe 1 MÊS GRÁTIS!\\\\n\\\\nCadastre-se agora: ${shareUrl}\\\\n\\\\nNão perca essa chance de começar sua jornada rumo à liberdade financeira!\\\\n\\\\nAbraços,\\\\n${user.name}`;
 
     const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.open(mailtoUrl);
@@ -2297,27 +2496,39 @@ export default function FortalezaNivel12() {
     trialEndDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
   });
 
-  // Funções de autenticação
+  // Funções de autenticação - ATUALIZADA COM VALIDAÇÃO REAL
   const handleLogin = (email: string, password: string) => {
-    // Simular autenticação
-    const newAuthUser: AuthUser = {
-      id: '1',
-      email,
-      name: email.split('@')[0],
-      hasPaymentMethod: false,
-      subscriptionStatus: 'trial',
-      trialEndDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-    };
-    
-    setAuthUser(newAuthUser);
-    setUser(prev => ({ ...prev, email, name: newAuthUser.name }));
-    setAuthState('payment');
+    // Validar credenciais contra a base de usuários válidos
+    const validUser = VALID_USERS.find(
+      user => user.email === email && user.password === password
+    );
+
+    if (validUser) {
+      const newAuthUser: AuthUser = {
+        id: '1',
+        email,
+        name: validUser.name,
+        hasPaymentMethod: validUser.hasPaymentMethod,
+        subscriptionStatus: validUser.subscriptionStatus,
+        trialEndDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      };
+      
+      setAuthUser(newAuthUser);
+      setUser(prev => ({ ...prev, email, name: validUser.name }));
+      
+      // Se usuário já tem pagamento ativo, pular para boas-vindas
+      if (validUser.hasPaymentMethod && validUser.subscriptionStatus === 'active') {
+        setAuthState('welcome');
+      } else {
+        setAuthState('payment');
+      }
+    }
   };
 
-  const handleRegister = (name: string, email: string, password: string) => {
-    // Simular cadastro
+  const handleRegister = (name: string, email: string, password: string, phone: string, countryCode: string) => {
+    // Simular cadastro (em produção, salvaria no banco de dados)
     const newAuthUser: AuthUser = {
-      id: '1',
+      id: Date.now().toString(),
       email,
       name,
       hasPaymentMethod: false,
@@ -2332,7 +2543,7 @@ export default function FortalezaNivel12() {
 
   const handlePaymentComplete = () => {
     if (authUser) {
-      setAuthUser({ ...authUser, hasPaymentMethod: true });
+      setAuthUser({ ...authUser, hasPaymentMethod: true, subscriptionStatus: 'active' });
       setAuthState('welcome');
     }
   };
@@ -2521,4 +2732,11 @@ export default function FortalezaNivel12() {
       </div>
     </div>
   );
+}
+
+// Declaração global para o PayPal SDK
+declare global {
+  interface Window {
+    paypal: any;
+  }
 }
