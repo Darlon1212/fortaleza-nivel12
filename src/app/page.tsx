@@ -280,7 +280,7 @@ const LoginScreen = ({ onLogin, onSwitchToRegister }: {
   );
 };
 
-// Componente de Cadastro - ATUALIZADO COM VALIDAÇÃO DE E-MAIL ÚNICO
+// Componente de Cadastro - CORRIGIDO SEM OPÇÕES INDESEJADAS
 const RegisterScreen = ({ onRegister, onSwitchToLogin }: { 
   onRegister: (name: string, email: string, password: string, phone: string, countryCode: string) => void;
   onSwitchToLogin: () => void;
@@ -365,7 +365,6 @@ const RegisterScreen = ({ onRegister, onSwitchToLogin }: {
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Fortaleza Nível 12</h1>
           <p className="text-gray-300">Crie sua conta</p>
-          <p className="text-sm text-yellow-400 mt-2">US$7.90/mês • Cancele quando quiser</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -1825,7 +1824,7 @@ const ReferralTab = ({ user }: { user: User }) => {
   const shareUrl = `https://fortalezanivel12.com/cadastro?ref=${referralCode}`;
 
   const handleShareWhatsApp = () => {
-    const message = `🏰 Descubra a Fortaleza Nível 12! \\\\n\\\\nTransforme sua vida financeira com o app que já mudou a vida de milhares de pessoas.\\\\n\\\\n✨ Use meu código de indicação: ${referralCode}\\\\n🎁 Ganhe 1 MÊS GRÁTIS na assinatura!\\\\n\\\\nCadastre-se agora: ${shareUrl}\\\\n\\\\n#FortalezaNivel12 #LiberdadeFinanceira`;
+    const message = `🏰 Descubra a Fortaleza Nível 12! \\\\\\\\n\\\\\\\\nTransforme sua vida financeira com o app que já mudou a vida de milhares de pessoas.\\\\\\\\n\\\\\\\\n✨ Use meu código de indicação: ${referralCode}\\\\\\\\n🎁 Ganhe 1 MÊS GRÁTIS na assinatura!\\\\\\\\n\\\\\\\\nCadastre-se agora: ${shareUrl}\\\\\\\\n\\\\\\\\n#FortalezaNivel12 #LiberdadeFinanceira`;
     
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
@@ -1833,7 +1832,7 @@ const ReferralTab = ({ user }: { user: User }) => {
 
   const handleShareEmail = () => {
     const subject = 'Ganhe 1 mês grátis na Fortaleza Nível 12!';
-    const body = `Olá!\\\\n\\\\nQuero compartilhar com você uma oportunidade incrível de transformar sua vida financeira.\\\\n\\\\nA Fortaleza Nível 12 é o app que está revolucionando a forma como as pessoas gerenciam suas finanças e constroem riqueza.\\\\n\\\\n🎁 OFERTA ESPECIAL: Use meu código de indicação \\\\\"${referralCode}\\\\\" e ganhe 1 MÊS GRÁTIS!\\\\n\\\\nCadastre-se agora: ${shareUrl}\\\\n\\\\nNão perca essa chance de começar sua jornada rumo à liberdade financeira!\\\\n\\\\nAbraços,\\\\n${user.name}`;
+    const body = `Olá!\\\\\\\\n\\\\\\\\nQuero compartilhar com você uma oportunidade incrível de transformar sua vida financeira.\\\\\\\\n\\\\\\\\nA Fortaleza Nível 12 é o app que está revolucionando a forma como as pessoas gerenciam suas finanças e constroem riqueza.\\\\\\\\n\\\\\\\\n🎁 OFERTA ESPECIAL: Use meu código de indicação \\\\\\\\\\"${referralCode}\\\\\\\\\\" e ganhe 1 MÊS GRÁTIS!\\\\\\\\n\\\\\\\\nCadastre-se agora: ${shareUrl}\\\\\\\\n\\\\\\\\nNão perca essa chance de começar sua jornada rumo à liberdade financeira!\\\\\\\\n\\\\\\\\nAbraços,\\\\\\\\n${user.name}`;
 
     const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.open(mailtoUrl);
