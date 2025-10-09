@@ -2334,27 +2334,16 @@ const MentorshipTab = () => {
 
       {activeSection === 'contact' && (
         <div className="space-y-6">
-          {/* Botões de Ação Principais */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Botão de Ação Principal */}
+          <div className="flex justify-center">
             <button
               onClick={() => window.open(whatsappUrl, '_blank')}
-              className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-6 px-6 rounded-2xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center"
+              className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-6 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center"
             >
               <Phone className="w-6 h-6 mr-3" />
               <div className="text-left">
                 <div className="text-lg">Quero fazer parte da mentoria FN12</div>
                 <div className="text-sm text-green-200">Falar agora com um mentor</div>
-              </div>
-            </button>
-            
-            <button
-              onClick={() => setShowForm(true)}
-              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-6 px-6 rounded-2xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center"
-            >
-              <MessageCircle className="w-6 h-6 mr-3" />
-              <div className="text-left">
-                <div className="text-lg">Quero ser contactado</div>
-                <div className="text-sm text-blue-200">Deixe seus dados</div>
               </div>
             </button>
           </div>
